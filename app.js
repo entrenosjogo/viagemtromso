@@ -166,7 +166,7 @@ function vMala(){const c=CFG(),q=malaQ,L=list('mala').filter(m=>m.quem===q),lim=
 const wd=bagW(q,'desp'),wm=bagW(q,'mao');
 const wbar=(l,g,max)=>{const p=max?Math.min(100,g/10/max):0,over=max&&g/1000>max;return `<div class="meter"><div class="l">${l}<span>${kg(g)}${max?` de ${max} kg`:''}</span></div><div class="bar"><i class="${over?'x':'a'}" style="width:${p}%"></i></div></div>`};
 const cats=Object.keys(MC);
-return `<div class="hdr"><h2>Mala</h2><button class="btn p" data-x="new" data-c="mala" data-quem="${q}">+ Item</button></div><div class="seg">${[['a',c.a],['b',c.b],['casal','Compartilhado']].map(([k,v])=>`<button class="${q===k?'on':''}" data-x="malaq" data-q="${k}">${esc(v)}</button>`).join('')}</div>
+return `<div class="hdr"><h2>Mala</h2><a class="btn" href="#looks">Looks do dia</a><button class="btn p" data-x="new" data-c="mala" data-quem="${q}">+ Item</button></div><div class="seg">${[['a',c.a],['b',c.b],['casal','Compartilhado']].map(([k,v])=>`<button class="${q===k?'on':''}" data-x="malaq" data-q="${k}">${esc(v)}</button>`).join('')}</div>
 <div class="card"><div class="kv"><div><b>${L.filter(m=>m.estado==2).length}</b><span>na mala</span></div><div><b>${L.filter(m=>m.estado==1).length}</b><span>separados</span></div><div><b>${L.filter(m=>!m.estado).length}</b><span>faltando</span></div></div>
 ${q==='casal'?wbar('Peso dos itens do casal',wd+wm,0)+'<p class="sub" style="margin:0">Somem estes itens à mala de quem for levar.</p>':wbar('Despachada',wd,lim.desp)+wbar('Mão',wm,lim.mao)+`<p class="sub" style="margin:0">Peso estimado pela soma dos itens (peso × quantidade), sem contar a mala vazia. <button class="btn" style="min-height:36px;margin-top:6px" data-x="lim">Limites da companhia</button></p>`}</div>
 <div class="btns" style="margin-bottom:14px"><button class="btn" data-x="tpl">Aplicar modelo Ártico</button><label class="btn" style="cursor:pointer"><input type="checkbox" id="miss" ${onlyMiss?'checked':''} style="width:20px;height:20px;margin:0"> Só o que falta</label></div>
@@ -209,8 +209,73 @@ function doSearch(q){q=q.trim().toLowerCase();if(!q){$('#qr').innerHTML='';retur
 for(const c in fields)for(const x of list(c)){if(fields[c].some(f=>String(x[f]||'').toLowerCase().includes(q)))r.push(`<button class="sr" data-x="edit" data-c="${c}" data-id="${x.id}"><span class="sub">${lab[c]}${c==='atv'&&x.dia?' · '+fD(x.dia):''}${c==='mala'?' · '+esc(NM(x.quem)):''}</span><b style="display:block">${esc(x.titulo||x.nome)}</b></button>`)}
 $('#qr').innerHTML=r.slice(0,40).join('')||'<p class="empty">Nada encontrado.</p>'}
 
+/* ===== Looks do dia (peças, fotos e escolhas ficam só neste aparelho) ===== */
+const LKS=[['touca','Touca',1],['orelha','Aquecedor de orelha',1],['gola','Gola / cachecol',1],['casaco','Casaco',0],['meio','Camada média',1],['base','Camada térmica',1],['luva','Luvas',1],['calca','Calça',0],['bota','Bota',0]];
+const LK={items:[],tab:'looks',s:(()=>{const d={sel:{},wx:{},wxT:0,day:null};try{return Object.assign(d,JSON.parse(localStorage.getItem('tromsoapp-looks')||'{}'))}catch(_){return d}})()};
+const lkSave=()=>{try{localStorage.setItem('tromsoapp-looks',JSON.stringify(LK.s))}catch(_){}};
+const CDB=(()=>{const open=()=>new Promise((ok,no)=>{const r=indexedDB.open('tromsoapp-closet',1);r.onupgradeneeded=()=>r.result.createObjectStore('p',{keyPath:'id'});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+const tx=(m,f)=>open().then(d=>new Promise((ok,no)=>{const t=d.transaction('p',m),q=f(t.objectStore('p'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error)}));
+return{all:()=>tx('readonly',s=>s.getAll()),put:v=>tx('readwrite',s=>s.put(v)),del:k=>tx('readwrite',s=>s.delete(k))}})();
+CDB.all().then(r=>{LK.items=r||[];if(!LK.items.length)LK.tab='closet';if(V==='looks')render()}).catch(()=>{});
+const lkSlot=k=>LKS.find(s=>s[0]===k),lkOf=k=>LK.items.filter(p=>p.slot===k).sort((x,y)=>x.w-y.w||x.nome.localeCompare(y.nome));
+const lkDay=()=>{const ds=days(),t=isoL(new Date());return ds.includes(LK.s.day)?LK.s.day:ds.includes(t)?t:ds[0]};
+function lkData(d){const wx=LK.s.wx[d]||{tmin:-6,tmax:-2,wind:15,prec:0,src:'est'},ds=days(),di=Math.max(0,ds.indexOf(d)),
+at=list('atv').filter(x=>x.dia===d).sort((x,y)=>(x.ord||0)-(y.ord||0)),
+par=at.some(x=>x.cat==='aurora'||/aurora|trenó|treno|husky|cães|baleia|rena|safári|safari|pesca|fiorde/i.test(x.titulo||'')),
+eff=(wx.tmin+wx.tmax)/2-wx.wind*.12-(par?5:0),wet=wx.prec>.3,N=(on,w,imp)=>({on:!!on,w:w||1,imp:!!imp}),
+need={touca:N(eff<=8),orelha:N(eff<=-6),gola:N(eff<=-3),casaco:N(1,eff>2?1:eff>-8?2:3,wet),meio:N(eff<=-9,2),base:N(eff<=-3),luva:N(eff<=3,eff>-6?1:2),calca:N(1,eff>-4?1:2),bota:N(1,eff>-4?1:eff>-12?2:3,wet)},
+auto={A:{},B:{}},warn=[];
+for(const [k,lab] of LKS){const nd=need[k],L=lkOf(k);if(!nd.on){auto.A[k]=auto.B[k]=null;continue}
+if(!L.length){auto.A[k]=auto.B[k]=null;warn.push('Cadastre: '+lab.toLowerCase());continue}
+const fit=L.filter(p=>p.w>=nd.w&&(!nd.imp||p.imp)),pool=fit.length?fit:[...L].sort((x,y)=>y.w-x.w||(y.imp?1:0)-(x.imp?1:0));
+if(!fit.length)warn.push('Falta '+lab.toLowerCase()+' mais quente'+(nd.imp?' e impermeável':'')+' para este dia');
+auto.A[k]=pool[di%pool.length].id;auto.B[k]=pool[(di+1)%pool.length].id}
+return{wx,at,par,need,auto,warn}}
+const lkPick=(d,k,s,D)=>{const m=LK.s.sel[d]&&LK.s.sel[d][k];if(m&&s in m&&(m[s]===null||LK.items.some(p=>p.id===m[s])))return m[s];return D.auto[k][s]??null};
+function lkStep(d,k,s,dir){const D=lkData(d),L=lkOf(s).map(p=>p.id),o=lkSlot(s)[2]?[...L,null]:L;if(!o.length)return;const i=o.indexOf(lkPick(d,k,s,D));((LK.s.sel[d]??={})[k]??={})[s]=o[(i+dir+o.length)%o.length];lkSave();render()}
+async function lkWx(){if(LK.busy)return;LK.busy=1;const ds=days(),t=isoL(new Date()),lim=isoL(new Date(Date.now()+15*864e5)),P='latitude=69.65&longitude=18.96&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_sum&timezone=auto',
+fut=ds.filter(d=>d>=t&&d<=lim),far=ds.filter(d=>d>lim),J=u=>fetch(u).then(r=>r.json());
+try{if(fut.length){const r=(await J(`https://api.open-meteo.com/v1/forecast?${P}&start_date=${fut[0]}&end_date=${fut[fut.length-1]}`)).daily;r.time.forEach((d,i)=>LK.s.wx[d]={tmin:r.temperature_2m_min[i],tmax:r.temperature_2m_max[i],wind:r.wind_speed_10m_max[i]||0,prec:r.precipitation_sum[i]||0,src:'prev'})}
+if(far.length){const sh=(d,y)=>(+d.slice(0,4)-y)+d.slice(4),R=await Promise.all([1,2,3].map(y=>J(`https://archive-api.open-meteo.com/v1/archive?${P}&start_date=${sh(far[0],y)}&end_date=${sh(far[far.length-1],y)}`).then(r=>r.daily))),
+av=(k,i)=>{const v=R.map(r=>r[k][i]).filter(x=>x!=null);return v.length?v.reduce((x,y)=>x+y,0)/v.length:0};far.forEach((d,i)=>LK.s.wx[d]={tmin:av('temperature_2m_min',i),tmax:av('temperature_2m_max',i),wind:av('wind_speed_10m_max',i),prec:av('precipitation_sum',i),src:'media'})}
+LK.s.wxT=Date.now();lkSave()}catch(_){LK.fail=1;toast('Sem internet: usando o último clima salvo')}
+LK.busy=0;if(V==='looks')render()}
+const lkEnsure=()=>{if(LK.busy||LK.fail)return;if(days().some(d=>!LK.s.wx[d])||Date.now()-LK.s.wxT>6*36e5)lkWx()};
+function lkTile(d,k,s,D){const id=lkPick(d,k,s,D),p=LK.items.find(x=>x.id===id),nd=D.need[s],lab=lkSlot(s)[1],has=lkOf(s).length>0,bad=p&&nd.on&&(p.w<nd.w||(nd.imp&&!p.imp)),
+ar=(c,t,x)=>has?`<button class="lka ${c}" data-lk="nav" data-d="${d}" data-k="${k}" data-s="${s}" data-dir="${x}" aria-label="${t}">${c==='l'?'‹':'›'}</button>`:'';
+return `<div class="lkt${!nd.on&&!p?' off':''}">${ar('l','Anterior',-1)}${p?`<img src="${p.foto}" alt="${esc(p.nome)}">`:`<span class="lke">${esc(lab)}<br>${has?'(sem)':nd.on?'cadastre uma peça':'dispensável'}</span>`}${ar('r','Próxima',1)}<div class="lkn">${esc(p?p.nome:lab)}${bad?' ⚠':''}</div></div>`}
+function vLooks(){lkEnsure();const ds=days(),d=lkDay(),tab=LK.tab,D=lkData(d),w=D.wx,r=x=>Math.round(x),
+src={prev:'previsão',media:'média dos 3 anos anteriores',est:'estimativa'}[w.src]||'estimativa';
+let b=`<div class="hdr"><h2>Looks</h2><a class="btn" href="#mala">‹ Mala</a></div><div class="lkr"><button class="lkc${tab==='looks'?' on':''}" data-lk="tab" data-t="looks">Looks do dia</button><button class="lkc${tab==='closet'?' on':''}" data-lk="tab" data-t="closet">Minhas peças (${LK.items.length})</button></div>`;
+if(tab==='closet'){b+=`<button class="btn p" data-lk="add" style="margin-bottom:14px">+ Adicionar peça</button>`;
+if(!LK.items.length)return b+`<p class="empty">Adicione as roupas e acessórios que vai levar: foto, tipo, quão quente é e se é impermeável. As fotos ficam só neste aparelho.</p>`;
+for(const [k,lab] of LKS){const L=lkOf(k);if(L.length)b+=`<div class="card"><h3>${esc(lab)}</h3><div class="lkp">${L.map(p=>`<button class="lkt" data-lk="edit" data-id="${p.id}"><img src="${p.foto}" alt=""><div class="lkn">${esc(p.nome)} ${'●'.repeat(p.w)}${p.imp?' 💧':''}</div></button>`).join('')}</div></div>`}return b}
+b+=`<div class="lkr">${ds.map(x=>`<button class="lkc${x===d?' on':''}" data-lk="day" data-d="${x}">${WD[DD(x).getDay()]} ${DD(x).getDate()}</button>`).join('')}</div>
+<div class="card"><h3>${r(w.tmin)}° a ${r(w.tmax)}° · vento ${r(w.wind)} km/h</h3><p class="sub">${w.prec>.3?r(w.prec*10)/10+' mm de precipitação':'Sem precipitação prevista'} · ${src}${D.par?' · passeio parado ao ar livre (look mais quente)':''}</p>${D.at.length?`<p class="sub" style="margin-top:6px">Passeios: ${D.at.map(x=>esc(x.titulo)).join(' · ')}</p>`:''}${D.warn.length?`<p class="sub" style="margin-top:6px;color:var(--bad)">${D.warn.map(esc).join(' · ')}</p>`:''}<div class="row" style="border:0;padding:8px 0 0"><button class="btn" data-lk="wx">Atualizar clima</button></div><p class="sub" style="font-size:12px;margin-top:6px">Dados: Open-Meteo.com</p></div>`;
+if(!LK.items.length)return b+`<p class="empty">Cadastre suas peças em "Minhas peças" para ver as sugestões.</p>`;
+for(const k of ['A','B'])b+=`<div class="card"><h3>Look ${k}</h3><div class="lkg">${LKS.map(s=>lkTile(d,k,s[0],D)).join('')}</div><div class="row" style="border:0;padding:8px 0 0"><button class="btn" data-lk="reset" data-d="${d}" data-k="${k}">Voltar à sugestão</button></div></div>`;
+return b+`<p class="sub">Use as setas ‹ › para trocar uma peça. ⚠ avisa quando a peça é pouco quente ou não é impermeável para o dia.</p>`}
+const lkDlg=document.createElement('dialog');lkDlg.className='lkd';document.body.appendChild(lkDlg);
+const lkSt=document.createElement('style');lkSt.textContent=`.lkr{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px}.lkc{flex:none;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-weight:600;color:inherit}.lkc.on{background:var(--pet);color:var(--on);border-color:var(--pet)}
+.lkg,.lkp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.lkt{position:relative;aspect-ratio:1;border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden;display:grid;place-items:center;padding:0;color:inherit}.lkt.off{opacity:.5}.lkt img{width:100%;height:100%;object-fit:contain;padding:6px 6px 22px}.lke{font-size:12px;color:var(--mut);text-align:center;padding:4px}
+.lkn{position:absolute;left:0;right:0;bottom:0;padding:3px 6px;font-size:11px;font-weight:600;background:var(--card);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}.lka{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:44px;border:0;border-radius:10px;background:var(--pet);opacity:.85;color:var(--on);font-size:22px;font-weight:700;z-index:1}.lka.l{left:3px}.lka.r{right:3px}
+dialog.lkd{border:1px solid var(--line);border-radius:18px;background:var(--card);color:inherit;padding:16px;width:min(92vw,420px)}dialog.lkd::backdrop{background:rgba(0,0,0,.45)}dialog.lkd form{display:grid;gap:12px}#lk-prev{max-height:160px;object-fit:contain;justify-self:center;border-radius:12px}`;document.head.appendChild(lkSt);
+let lkEd=null,lkFoto='';
+function lkOpen(id){const p=LK.items.find(x=>x.id===id);lkEd=id||null;lkFoto=p?p.foto:'';
+lkDlg.innerHTML=`<form id="lkf"><h3>${p?'Editar peça':'Nova peça'}</h3><label class="f">Foto<input type="file" id="lk-file" accept="image/*"></label><img id="lk-prev" alt="" ${lkFoto?`src="${lkFoto}"`:'hidden'}><label class="f">Tipo<select id="lk-slot">${LKS.map(s=>`<option value="${s[0]}"${p&&p.slot===s[0]?' selected':''}>${s[1]}</option>`).join('')}</select></label><label class="f">Nome<input id="lk-nome" maxlength="40" placeholder="ex: parka preta" value="${p?esc(p.nome):''}"></label><label class="f">Quão quente é<select id="lk-w">${['Leve','Médio','Muito quente'].map((t,i)=>`<option value="${i+1}"${p&&p.w===i+1?' selected':''}>${t}</option>`).join('')}</select></label><label class="f" style="flex-direction:row;align-items:center;gap:10px;font-weight:500"><input type="checkbox" id="lk-imp" style="width:22px;height:22px;min-height:0;flex:none"${p&&p.imp?' checked':''}> Impermeável / corta-vento</label><p class="sub" id="lk-m" style="margin:0"></p><div class="row" style="border:0;padding:0"><button class="btn p">Salvar</button><button type="button" class="btn" data-lk="cancel">Cancelar</button>${p?'<button type="button" class="btn d" data-lk="del">Excluir</button>':''}</div></form>`;lkDlg.showModal()}
+function lkImg(f){return new Promise((ok,no)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{const k=Math.min(1,520/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=Math.round(i.width*k);c.height=Math.round(i.height*k);c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(f.type==='image/png'?c.toDataURL('image/png'):c.toDataURL('image/jpeg',.74))};i.onerror=()=>{URL.revokeObjectURL(u);no()};i.src=u})}
+document.addEventListener('change',async e=>{if(e.target.id!=='lk-file'||!e.target.files[0])return;try{lkFoto=await lkImg(e.target.files[0]);const v=$('#lk-prev');v.src=lkFoto;v.hidden=false}catch(_){$('#lk-m').textContent='Não consegui ler essa foto.'}});
+document.addEventListener('submit',async e=>{if(e.target.id!=='lkf')return;e.preventDefault();const nome=$('#lk-nome').value.trim();if(!lkFoto||!nome){$('#lk-m').textContent='Coloque uma foto e um nome.';return}
+const p={id:lkEd||nid(),slot:$('#lk-slot').value,nome,w:+$('#lk-w').value,imp:$('#lk-imp').checked,foto:lkFoto};
+try{await CDB.put(p);const i=LK.items.findIndex(x=>x.id===p.id);if(i<0)LK.items.push(p);else LK.items[i]=p;lkDlg.close();render()}catch(_){$('#lk-m').textContent='Não consegui salvar (sem espaço?).'}});
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-lk]');if(!b)return;const x=b.dataset.lk,D=b.dataset;
+if(x==='add')lkOpen();else if(x==='edit')lkOpen(D.id);else if(x==='cancel')lkDlg.close();
+else if(x==='del'){if(confirm('Excluir esta peça?')){try{await CDB.del(lkEd)}catch(_){}LK.items=LK.items.filter(p=>p.id!==lkEd);lkDlg.close();render()}}
+else if(x==='tab'){LK.tab=D.t;render()}else if(x==='day'){LK.s.day=D.d;lkSave();render()}
+else if(x==='nav')lkStep(D.d,D.k,D.s,+D.dir);else if(x==='reset'){if(LK.s.sel[D.d])delete LK.s.sel[D.d][D.k];lkSave();render()}
+else if(x==='wx'){LK.fail=0;LK.s.wxT=0;lkWx()}});
 /* render + routing */
-const VIEWS={inicio:vInicio,roteiro:vRoteiro,reservas:vReservas,documentos:vDocs,mala:vMala,mais:vMais};
+const VIEWS={looks:vLooks,inicio:vInicio,roteiro:vRoteiro,reservas:vReservas,documentos:vDocs,mala:vMala,mais:vMais};
 let dragging=false,rq=0;
 function render(){if(dragging)return;cancelAnimationFrame(rq);rq=requestAnimationFrame(()=>{if(needSetup()&&$('#setupf'))return;const a=document.activeElement,keep=a&&a.id&&$('#view').contains(a)?[a.id,a.selectionStart,a.value]:null;
 $('#view').innerHTML=mode==='login'?vLogin():needSetup()?vSetup():VIEWS[V]();hydrate();document.querySelectorAll('.bn a').forEach(x=>x.classList.toggle('on',x.dataset.v===V));

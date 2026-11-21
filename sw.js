@@ -1,6 +1,6 @@
 // Service worker do app Tromsø: deixa o app abrir sem internet.
 // Ao publicar uma versão nova, aumente o número abaixo.
-const VERSION = 'tromsoapp-v1';
+const VERSION = 'tromsoapp-v2';
 const SHELL = ['./', './index.html', './app.js', './seed-data.js', './config.js', './manifest.webmanifest',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/icon-maskable-512.png'];
 
