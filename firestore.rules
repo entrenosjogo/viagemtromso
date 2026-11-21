@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Só os dois e-mails abaixo leem e escrevem. Troque pelos e-mails que vocês
+    // cadastrarem em Authentication > Users (em letras minúsculas).
+    match /{document=**} {
+      allow read, write: if request.auth != null
+        && request.auth.token.email in ['email1@exemplo.com', 'email2@exemplo.com'];
+    }
+  }
+}

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#0d5566"><meta name="description" content="Organizador de viagem a Tromsø"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Tromsø"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>Tromsø</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Figtree:wght@400;500;600;700&display=swap"><style>
+/* VOICE everyday: cozy, clean, practical; a couple planning together
+   IDEA a polar expedition logbook on a phone: ice-white pages, petrol ink, aurora marks what matters
+   PICTURE Início opens on a small Tromsø twilight scene carrying the countdown; elsewhere the working lists are the picture
+   COLOUR ice white / deep petrol night; petrol leads, aqua supports, aurora purple accent; warm orange only for alerts
+   TYPE Familjen Grotesk display + Figtree text
+   LAYOUT app shell: slim sticky top bar, one column up to 760px (two panes above 980px where useful), fixed bottom nav */
+:root{color-scheme:light dark;--bg:light-dark(#f3f8f9,#061a20);--card:light-dark(#ffffff,#0b262e);--ink:light-dark(#0a2a33,#e4f2f4);--mut:light-dark(#4c6a72,#93b2b9);--line:light-dark(#d8e6e9,#183b44);--soft:light-dark(#e8f2f3,#0f3039);--pet:light-dark(#0d5566,#56c6d3);--aqua:light-dark(#0f9a90,#5fe0d2);--aur:light-dark(#6d4fd0,#b6a0ff);--warn:light-dark(#b0530f,#ffb07a);--bad:light-dark(#b8324c,#ff8da3);--sun:#f1b23c;--on:light-dark(#ffffff,#04161b)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:"Familjen Grotesk",Figtree,sans-serif;line-height:1.08;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h2{font-size:clamp(28px,6vw,36px)}h3{font-size:19px}
+a{color:var(--pet)}
+button,input,select,textarea{font:inherit;color:var(--ink)}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--aur);outline-offset:2px}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:max(env(safe-area-inset-top),8px) max(16px,env(safe-area-inset-right)) 8px max(16px,env(safe-area-inset-left))}
+.top .in{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:12px;min-height:44px}
+.top b{font:700 20px "Familjen Grotesk",sans-serif;letter-spacing:-.02em}
+#sync{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut);margin-left:auto;white-space:nowrap}
+#sync i{width:8px;height:8px;border-radius:50%;background:var(--mut)}
+#sync.ok i{background:var(--aqua)}#sync.warn i{background:var(--warn)}
+.ib{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;flex:none}
+.ib svg{width:22px;height:22px}
+main{max-width:980px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left)) calc(96px + env(safe-area-inset-bottom))}
+.bn{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);padding:4px 6px env(safe-area-inset-bottom)}
+.bn .in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
+.bn a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 6px;text-decoration:none;color:var(--mut);font-size:12px;font-weight:600;border-radius:12px;min-height:52px}
+.bn a svg{width:24px;height:24px}
+.bn a.on{color:var(--pet)}
+.bn a.on svg{background:color-mix(in srgb,var(--pet) 14%,transparent);border-radius:10px;padding:2px;width:40px;height:28px}
+svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+.card h3{margin-bottom:10px}
+.sub{color:var(--mut);font-size:14px}
+.lede{color:var(--mut);margin:6px 0 18px;max-width:62ch}
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;padding:2px 9px;border-radius:99px;white-space:nowrap;background:var(--soft);color:var(--mut)}
+.pill.aur{background:color-mix(in srgb,var(--aur) 16%,transparent);color:var(--aur)}
+.pill.ok{background:color-mix(in srgb,var(--aqua) 16%,transparent);color:var(--aqua)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.pill.pet{background:color-mix(in srgb,var(--pet) 14%,transparent);color:var(--pet)}
+.btn{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-weight:600;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn.p{background:var(--pet);border-color:var(--pet);color:var(--on)}
+.btn.d{color:var(--bad)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.seg{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:14px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px}
+.seg button{flex:1 0 auto;border:0;background:none;min-height:40px;padding:0 14px;border-radius:10px;font-weight:600;color:var(--mut);white-space:nowrap}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.hero{position:relative;border-radius:22px;overflow:hidden;color:#fff;min-height:230px;background:#08283a;margin-bottom:14px}
+.hero svg{position:absolute;inset:0;width:100%;height:100%}
+.hero .t{position:relative;padding:20px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;text-shadow:0 1px 10px rgba(4,22,30,.8)}
+.hero h1{font-size:clamp(32px,7vw,44px);color:#fff}
+.hero p{margin:4px 0 0;color:#dff4f6;font-weight:500}
+.hero .c{text-align:right}
+.hero .c b{display:block;font:700 clamp(46px,12vw,72px)/.95 "Familjen Grotesk",sans-serif;letter-spacing:-.03em}
+.aurb{animation:sway 14s ease-in-out infinite alternate}
+@keyframes sway{from{transform:translateX(-24px);opacity:.75}to{transform:translateX(24px);opacity:1}}
+@media(prefers-reduced-motion:reduce){.aurb{animation:none}}
+.two{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:980px){.two{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start}}
+.meter{margin:12px 0}
+.meter .l{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:15px}
+.meter .l span{color:var(--mut);font-weight:500;white-space:nowrap}
+.bar{height:9px;border-radius:99px;background:var(--soft);overflow:hidden;margin-top:6px;display:flex}
+.bar i{display:block;height:100%}
+.bar .a{background:var(--aqua)}.bar .b{background:color-mix(in srgb,var(--aqua) 40%,transparent)}.bar .x{background:var(--bad)}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.alert:first-of-type{border-top:0}
+.alert i{flex:none;width:10px;height:10px;border-radius:50%;margin-top:7px;background:var(--warn)}
+.alert.bad i{background:var(--bad)}
+.alert button{all:unset;cursor:pointer;flex:1}
+.alert button b{display:block;font-weight:600}
+.light{position:relative;height:12px;border-radius:99px;background:light-dark(#163c4a,#03121a);overflow:hidden;margin-top:10px}
+.light i{position:absolute;top:0;bottom:0}
+.light .tw{background:linear-gradient(90deg,#6b56a8,#e58aa8,#6b56a8)}
+.light .sn{background:var(--sun)}
+.light .au{background:repeating-linear-gradient(90deg,#5fe0d2 0 3px,transparent 3px 7px);opacity:.8}
+.ticks{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-top:3px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin:0 -4px 12px;padding-left:4px}
+.chips button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:6px 10px;min-width:56px;min-height:58px;display:flex;flex-direction:column;align-items:center;gap:1px;font-weight:600}
+.chips button small{font-size:12px;color:var(--mut);font-weight:500}
+.chips button b{font:700 20px "Familjen Grotesk",sans-serif}
+.chips button.on{background:var(--pet);border-color:var(--pet);color:var(--on)}
+.chips button.on small{color:var(--on)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:var(--line)}
+.dot.aurora{background:var(--aur)}.dot.descanso{background:var(--aqua)}.dot.flex{background:var(--sun)}.dot.viagem{background:var(--mut)}
+.arow{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);background:var(--card)}
+.arow:first-child{border-top:0}
+.arow.drag{opacity:.85;box-shadow:0 8px 20px rgba(0,0,0,.18);border-radius:12px;position:relative;z-index:2}
+.grip{width:32px;height:44px;display:grid;place-items:center;color:var(--mut);touch-action:none;cursor:grab;border:0;background:none;padding:0}
+.grip svg{width:18px;height:18px;fill:currentColor}
+.tm{font:700 18px "Familjen Grotesk",sans-serif;width:3.2em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tm.none{color:var(--mut);font-weight:500;font-size:15px}
+.abody{all:unset;cursor:pointer;display:block;min-width:0}
+.abody b{display:block;font-weight:600;line-height:1.3}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;align-items:center}
+.map{position:relative;height:220px;border-radius:14px;background:light-dark(#e4f0f2,#082028);overflow:hidden;margin-top:6px}
+.map svg{position:absolute;inset:0;width:100%;height:100%}
+.legs{list-style:none;padding:0;margin:10px 0 0;font-size:14px}
+.legs li{display:flex;gap:8px;padding:4px 0}
+.legs .n{flex:none;width:22px;height:22px;border-radius:50%;background:var(--pet);color:var(--on);display:grid;place-items:center;font-size:12px;font-weight:700}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .h{font-size:12px;color:var(--mut);text-align:center;font-weight:600}
+.cal button{border:1px solid var(--line);background:var(--card);border-radius:12px;min-height:84px;padding:6px;text-align:left;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.cal button b{font:700 18px "Familjen Grotesk",sans-serif}
+.cal button span{font-size:11px;line-height:1.25;color:var(--mut);overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.cal .tb{height:4px;border-radius:99px;width:100%}
+.tb.aurora{background:var(--aur)}.tb.descanso{background:var(--aqua)}.tb.flex{background:var(--sun)}.tb.viagem{background:var(--mut)}
+.rc{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:10px}
+.rc .r1{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.rc .k{font-size:13px;font-weight:700;color:var(--pet)}
+.rc b{display:block;font-size:17px;margin:4px 0 2px;line-height:1.3}
+.rc .ln{font-size:14px;color:var(--mut);display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.rc .ln strong{color:var(--ink);font-weight:600}
+.cp{border:1px dashed var(--line);background:none;border-radius:8px;padding:0 8px;min-height:30px;font-size:13px;font-weight:600;font-family:ui-monospace,monospace;color:var(--ink)}
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.files a{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:4px 8px 4px 4px;text-decoration:none;color:var(--ink);font-size:13px;max-width:100%}
+.files img{width:44px;height:44px;object-fit:cover;border-radius:7px}
+.files .pdf{width:44px;height:44px;border-radius:7px;background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad);display:grid;place-items:center;font-weight:700;font-size:12px}
+.files span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:14em}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.mrow:first-of-type{border-top:0}
+.mrow .abody b{font-weight:600}
+.mrow.s2 .abody b{color:var(--mut);text-decoration:line-through}
+.stb{min-width:104px;min-height:40px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);font-size:14px;font-weight:600;color:var(--mut)}
+.stb.s1{border-color:var(--warn);color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.stb.s2{border-color:var(--aqua);background:var(--aqua);color:var(--on)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5em,1fr));gap:12px}
+.kv b{display:block;font:700 24px "Familjen Grotesk",sans-serif;white-space:nowrap}
+.kv span{font-size:13px;color:var(--mut)}
+.row{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.tel{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.empty{color:var(--mut);padding:8px 0}
+.mods{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.mod{border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--card)}
+.mod b{display:block;font-weight:700}
+.set{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:600;color:var(--mut)}
+input:not([type=checkbox]):not([type=file]),select,textarea{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:46px;font-size:16px;width:100%}
+textarea{min-height:90px;resize:vertical}
+#sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+#sheet[hidden]{display:none}
+#sheet .bg{position:absolute;inset:0;background:rgba(2,14,18,.5)}
+#sheet .sc{position:relative;width:min(640px,100%);max-height:92%;overflow:auto;background:var(--bg);border-radius:22px 22px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom))}
+#sheet .grab{width:44px;height:5px;border-radius:99px;background:var(--line);margin:4px auto 12px}
+#sheet form{display:grid;gap:12px}
+#sheet .sh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw}
+#toast.on{opacity:1}
+.exb{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px dashed var(--aur);border-radius:14px;padding:10px 14px;margin-bottom:14px;font-size:14px}
+.del-f{border:0;background:none;color:var(--mut);width:32px;height:44px;font-size:18px;padding:0}.del-f:hover{color:var(--bad)}
+.sr{all:unset;cursor:pointer;display:block;padding:10px 0;border-top:1px solid var(--line);width:100%}
+@media(max-width:420px){.hero .t{flex-direction:column}.hero .c{text-align:left}.hero .c b{display:inline;margin-right:8px}.cal button{min-height:64px;padding:4px}.cal button span{display:none}}
+</style></head><body>
+<header class="top"><div class="in"><b>Tromsø</b><span id="sync"><i></i><span>Conectando…</span></span><button class="ib" id="bsearch" aria-label="Buscar"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button></div></header>
+<main id="view"></main>
+<nav class="bn"><div class="in">
+<a href="#inicio" data-v="inicio"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Início</a>
+<a href="#roteiro" data-v="roteiro"><svg class="ic" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H16"/></svg>Roteiro</a>
+<a href="#reservas" data-v="reservas"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z"/><path d="M14 7v10" stroke-dasharray="2 2"/></svg>Reservas</a>
+<a href="#documentos" data-v="documentos"><svg class="ic" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg>Docs</a>
+<a href="#mala" data-v="mala"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 7V5a3 3 0 0 1 6 0v2M4 13h16"/></svg>Mala</a>
+<a href="#mais" data-v="mais"><svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>Mais</a>
+</div></nav>
+<div id="sheet" hidden><div class="bg" data-x="close"></div><div class="sc" role="dialog" aria-modal="true"><div class="grab"></div><div id="shb"></div></div></div>
+<div id="toast" role="status"></div>
+<input type="file" id="file" accept="image/*,application/pdf" hidden><input type="file" id="bk" accept="application/json,.json" hidden>
+<script src="config.js"></script><script src="seed-data.js"></script><script src="app.js"></script></body></html>
