@@ -1,20 +1,13 @@
 // Configuração do app Tromsø
 //
-// Sem Firebase (firebase: null), o app salva tudo só no aparelho em que estiver aberto.
-// Para sincronizar entre os dois celulares, crie um projeto no Firebase
-// (passo a passo no README.md) e cole aqui o objeto firebaseConfig, assim:
-//
-// window.TROMSO_CONFIG = {
-//   firebase: {
-//     apiKey: "AIza...",
-//     authDomain: "seu-projeto.firebaseapp.com",
-//     projectId: "seu-projeto",
-//     appId: "1:123:web:abc"
-//   }
-// };
-//
-// Esses valores não são segredo: quem protege os dados são as regras em firestore.rules.
+// Firebase ligado: os dois celulares sincronizam entre si (login por e-mail e senha).
+// Estes valores não são segredo: quem protege os dados são o login e as regras do Firestore.
 
 window.TROMSO_CONFIG = {
-  firebase: null
+  firebase: {
+    apiKey: "AIzaSyC_yx7gGDuAs9ASvgjkVEzmykLh4C7K4M0",
+    authDomain: "viagemtromso.firebaseapp.com",
+    projectId: "viagemtromso",
+    appId: "1:494930135000:web:5b17b7e93b1d63678594ad"
+  }
 };
